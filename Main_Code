@@ -1,0 +1,147 @@
+#PDF Editor
+#Assining the API key Here..............
+import customtkinter
+import tkinter
+from tkinter import *
+from tkinter import messagebox
+from tkinter import filedialog
+from PyPDF2 import PdfReader,PdfWriter
+import PyPDF2
+class PDFEditorApp:
+    def __init__(self,root):
+        #Creating the Main Frame
+        frame1=customtkinter.CTkFrame(master=app,height=270)
+        frame1.place(x=0,y=0)
+        frame2=customtkinter.CTkFrame(master=app,width=500,height=600)
+        frame2.place(x=220,y=0)
+        def merge():
+            file_paths = filedialog.askopenfilenames(title="Select PDF Files", filetypes=[("PDF files", "*.pdf")])
+            if not file_paths:
+                return
+            pdf_merger = PyPDF2.PdfFileMerger()
+            for file_path in file_paths:
+                pdf_merger.append(file_path)
+
+            output_file = filedialog.asksaveasfilename(defaultextension=".pdf", filetypes=[("PDF files", "*.pdf")])
+            if not output_file:
+                return
+            with open(output_file, "wb") as output_pdf:
+                pdf_merger.write(output_pdf)
+            pdf_merger.close()
+        def password():
+            pdf_file = filedialog.askopenfilename(initialdir="C://", title="Open PDF File", filetypes=(("PDF Files", "*.pdf"), ("All Files", "*.*")))
+            if pdf_file:
+                reader=PdfReader(pdf_file)
+                pdf_write=PdfWriter()
+                for page in reader.pages:
+                    pdf_write.add_page(page)
+                root2 = Tk()
+                root2.title("PDF-Editor")
+                root2.geometry('450x250+500+200')
+                root2.resizable(0,0)
+                root2.config(bg='#c1c1ff')
+                label_password =Label(root2, text="Password:",bg='#c1c1ff',font=(5))
+                label_password.grid(row=1, column=0, padx=20, pady=20)
+                entry_password =Entry(root2, show="*")
+                entry_password.grid(row=1, column=1, padx=20, pady=20)
+
+                # Confirm Password
+                label_confirm_password = Label(root2, text="Confirm Password",bg='#c1c1ff',font=(5))
+                label_confirm_password.grid(row=2, column=0, padx=20, pady=20)
+                entry_confirm_password = Entry(root2, show="*")
+                entry_confirm_password.grid(row=2, column=1, padx=20, pady=20)
+                def submit_form():
+                    if entry_password.get()==entry_confirm_password.get():
+                        pdf_write.encrypt(entry_password.get())
+                        pdf_write.write(pdf_file)
+                        messagebox.showinfo("PDF_Editor","PDF Secured Successfully")
+                        close1()
+                        
+                    else:
+                        messagebox.showerror("PDF-Editor","Password Do Not Match")
+                        
+                # Submit Button
+                submit_button = Button(root2, text="Submit", bg='lightyellow',command=submit_form,font='3')
+                submit_button.grid(row=3, columnspan=2, padx=10, pady=10)
+                root2.mainloop()
+        def close1():
+            root2.destroy()
+                
+        def remove():
+            pdf_file = filedialog.askopenfilename(initialdir="C://", title="Open PDF File", filetypes=(("PDF Files", "*.pdf"), ("All Files", "*.*")))
+            if pdf_file:
+                reader=PdfReader(pdf_file)
+                root2 = Tk()
+                root2.title("PDF-Editor")
+                root2.geometry('450x250+500+200')
+                root2.resizable(0,0)
+                root2.config(bg='#c1c1ff')
+                label_password =Label(root2, text="Password:",bg='#c1c1ff',font=(5))
+                label_password.grid(row=1, column=0, padx=20, pady=20)
+                entry_password =Entry(root2, show="*")
+                entry_password.grid(row=1, column=1, padx=20, pady=20)
+                def submit_form():
+                    if reader.is_encrypted:
+                        pdf_writer = PdfWriter()
+                        pdf_reader = PdfReader(open(pdf_file, 'rb'), strict=False)
+                        pdf_reader.decrypt(entry_password.get())
+                        for page_number in range(len(pdf_reader.pages)):
+                            pdf_writer.add_page(pdf_reader.pages[page_number])
+                        messagebox.showinfo("PDF-Editor","Password Removed Successfully")
+                    else:
+                        messagebox.showinfo("PDF-Editor","PDF is Already Decrypted")
+                # Submit Button
+                submit_button = Button(root2, text="Submit", bg='lightyellow',command=submit_form,font='3')
+                submit_button.grid(row=3, columnspan=2, padx=10, pady=10)
+                root2.mainloop()
+
+        def text():
+              open_file = filedialog.askopenfilename(initialdir="C://", title="Open PDF File", filetypes=(("PDF Files", "*.pdf"), ("All Files", "*.*")))
+              if open_file:
+                  pdf_file = PyPDF2.PdfReader(open_file)
+                  page_count = len(pdf_file.pages)
+                  all_page_stuff = ""
+                  for i in range(page_count):
+                      page = pdf_file.pages[i]
+                      page_stuff = page.extract_text()
+                      all_page_stuff += page_stuff + "\n\n"
+
+                  my_text =Text(frame2, width=60, height=37, font=("Comic Sans", 13), selectforeground="black")
+                  my_text.place(x=0,y=0)
+                  my_text.insert("1.0",all_page_stuff)
+                  def close():
+                      my_text.delete("1.0","end")
+                      my_text.destroy()
+                  close1=customtkinter.CTkButton(master=frame2,width=7,fg_color="red",text="X",command=lambda:[close()],font=("arial",10))
+                  close1.place(x=475,y=0)
+                 
+        def image():
+            open_img = filedialog.askopenfilename(initialdir="C://", title="Open Image", filetypes=((".png", "*.png"),(".jpeg","*.jpeg"),(".Tiff","*.tiff"),("All Files", "*.*")))
+            img=Image.open(open_img)
+            filename=f"{os.path.splitext(open_img)[0]}.pdf"
+            img.save(filename)
+            messagebox.showinfo("PDF-Editor","Image Coverted to PDF")
+        #Adding Buttons to the Frame
+        button_1=customtkinter.CTkButton(master=frame1,text="Merge PDF",fg_color="#208fff",font=("arial",15),command=merge)
+        button_1.place(x=10,y=40)
+        button_2=customtkinter.CTkButton(master=frame1,text="Add Pass",fg_color="#208fff",font=("arial",15),command=password)
+        button_2.place(x=10,y=80)
+        button_3=customtkinter.CTkButton(master=frame1,text="Remove Pass",fg_color="#208fff",font=("arial",15),command=remove)
+        button_3.place(x=10,y=120)
+        button_4=customtkinter.CTkButton(master=frame1,text="Extract Text",command=text,fg_color="#208fff",font=("arial",15))
+        button_4.place(x=10,y=160)
+        button_5=customtkinter.CTkButton(master=frame1,text="Convert Image",fg_color="#208fff",font=("arial",15),command=image)
+        button_5.place(x=10,y=200)
+        label=customtkinter.CTkLabel(master=frame2,text="Preview")
+        label.place(x=230,y=250)
+        img=PhotoImage(file="C:\\Users\\DELL\\Downloads\\file.png")
+        app.mainloop()
+if __name__=="__main__":
+    customtkinter.set_appearance_mode("dark")
+    customtkinter.set_default_color_theme("blue")
+    app=customtkinter.CTk()
+    app.title("PDF Editor")
+    app.geometry("750x600")
+    app.wm_iconbitmap("C:\\Users\\DELL\\Downloads\\pdf_icon.ico")
+    app1=PDFEditorApp(app)
+
