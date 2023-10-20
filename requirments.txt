@@ -1,0 +1,3 @@
+PDF_Editor_APP
+file.png (pdf image)
+pdf_icon.ico (App Icon)
